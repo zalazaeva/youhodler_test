@@ -2,10 +2,10 @@ const api = require('./binance-api')({
     rp: require('request-promise')
 });
 const BigNumber = require('bignumber.js');
-const { FREQUENCY } = require('./const');
+const { FREQUENCY, BASE_URL } = require('./const');
 
 const apiBinance = new api.ApiBinance({
-    baseUrl: 'https://data-api.binance.vision',
+    baseUrl: BASE_URL,
     debug: true
 });
 
