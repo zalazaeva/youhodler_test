@@ -1,11 +1,8 @@
 const express = require('express');
-const { getPriceFromBinance } = require('./api/utils');
-const { addHeaders } = require('./api/middleware');
-const { PORT, TIMEOUT, SYMBOL } = require('./api/const');
+const { PORT } = require('./api/const');
 const app = express();
 
 if (PORT) {
-    // Start the server
     app.listen(PORT, () => {
         if (PORT)
         console.log(`Server listening on port ${PORT}`);
@@ -14,21 +11,18 @@ if (PORT) {
     throw new Error('port is required')
 }
 
+app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Connection', 'keep-alive');
+    next();
+  });
 
-app.get('/price', (req, res) => {
-    addHeaders(res)
+const router = require('./routes');
+app.use('/price', router);
 
-    getPriceFromBinance(SYMBOL, res);
-    
-    const interValID = setInterval(() => {
-            return getPriceFromBinance(SYMBOL, res);
-        }, TIMEOUT);
-
-    // If client closes connection, stop sending events
-    req.on('close', () => {
-        console.log('connection close');
-        clearInterval(interValID);
-        res.statusCode = 500;
-        res.end();
-    });
+app.use(function(req, res, next) {
+    res.statusCode = 404;
+    next('Not Found');
 });
